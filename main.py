@@ -5,6 +5,7 @@ import time
 import json
 from src.api_client import ApiClient
 import os
+from concurrent.futures import ThreadPoolExecutor
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,6 +23,20 @@ reports = [('incomes', 'Поставки'),
            ('sales', 'Продажи'),
            ('reportDetailByPeriod', 'Отчет о продажах по реализации')]
 
-for method, report in reports:
+def save_data(method: str, report: str):
     data = client.__getattribute__(method).__call__()
     data.to_excel(f'{report}.xlsx', index = False)
+    return
+
+with ThreadPoolExecutor() as executor:
+    futures = []
+    for method, report in reports:
+        futures.append(
+            executor.submit(save_data, method, report)
+            )
+
+# for method, report in reports:
+#     data = client.__getattribute__(method).__call__()
+#     data.to_excel(f'{report}.xlsx', index = False)
+
+client.session.close()

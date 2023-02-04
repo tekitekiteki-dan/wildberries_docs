@@ -8,12 +8,13 @@ class ApiClient:
         self.token = token
         self.cnf = cnf
         self.url_stat = 'https://statistics-api.wildberries.ru'
+        self.session = requests.session()
+        self.session.headers.update({'Authorization': self.token})
     
     def __request_get(self, path: str, params: dict):
-        headers = {'Authorization': self.token}
         while True:
             try:
-                r = requests.get(url = self.url_stat + path, params = params, headers = headers, timeout = 60)
+                r = self.session.get(url = self.url_stat + path, params = params, timeout = 60)
                 if r.status_code != 200:
                     if r.json()['errors'] == ['(api-new) too many requests']:
                         time.sleep(60)
